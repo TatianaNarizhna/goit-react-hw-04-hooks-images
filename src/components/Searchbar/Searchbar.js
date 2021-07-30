@@ -1,38 +1,34 @@
-import React, { Component } from "react";
+// import React, { Component } from "react";
+import  { useState } from 'react';
 import PropTypes from "prop-types";
 import { toast } from "react-toastify";
 
-export default class SearchBar extends Component {
-  state = {
-    searchName: "",
+export default function SearchBar({ onSubmit })  {
+  const [searchName, setSearchName] = useState('');
+
+   const handleSearchChange = (e) => {
+    setSearchName(e.currentTarget.value.toLowerCase());
   };
 
-  handleSearchChange = (e) => {
-    this.setState({ searchName: e.currentTarget.value.toLowerCase() });
-  };
-
-  handleFormSubmit = (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    if (this.state.searchName.trim() === "") {
+    if (searchName.trim() === "") {
       return toast.error("Enter correct request!");
     }
-    this.props.onSubmit(this.state.searchName);
+    onSubmit(searchName);
     // this.setState({ searchName: "" })
-    this.formReset();
+    formReset();
   };
 
-  formReset = () => {
-    this.setState({
-      searchName: "",
-    });
+   const formReset = () => {
+    setSearchName('');
   };
 
-  render() {
     return (
       <div>
         <header className="Searchbar">
-          <form onSubmit={this.handleFormSubmit} className="SearchForm">
+          <form onSubmit={handleFormSubmit} className="SearchForm">
             <button type="submit" className="SearchForm-button">
               <span className="SearchForm-button-label">Search</span>
             </button>
@@ -41,16 +37,15 @@ export default class SearchBar extends Component {
               className="SearchForm-input"
               type="text"
               autoComplete="off"
-              value={this.state.searchName}
+              value={searchName}
               autoFocus
               placeholder="Search images and photos"
-              onChange={this.handleSearchChange}
+              onChange={handleSearchChange}
             />
           </form>
         </header>
       </div>
     );
-  }
 }
 
 SearchBar.propTypes = {

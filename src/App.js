@@ -1,6 +1,5 @@
-import React, { Component } from "react";
+import  { useState, useEffect } from 'react';
 import { ToastContainer } from "react-toastify";
-// import Loader from "react-loader-spinner";
 import "react-toastify/dist/ReactToastify.css";
 import api from "./services/apiService";
 import SearchBar from "./components/Searchbar/Searchbar";
@@ -9,40 +8,32 @@ import Button from "./components/Button/Button";
 import Modal from "./components/Modal/Modal";
 import Loader from "./components/Loader/Loader";
 
-class App extends Component {
-  state = {
-    searchName: " ",
-    images: [],
-    page: 1,
-    loader: false,
-    error: null,
-    showModal: false,
-    modalImg: "",
-  };
+export default function App()  {
+  const [searchName, setSearchName] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loader, setLoader] = useState(false);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalImg, setModalImg] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchName !== this.state.searchName) {
-      this.fetchSearch();
+  useEffect(() => {
+    if(searchName === '') {
+      return;
     }
-  }
-
-  formSubmit = (searchName) => {
-    this.setState({ searchName: searchName, page: 1, images: [] });
-  };
-
-  fetchSearch = () => {
-    const { searchName, page, images } = this.state;
-    this.setState({ loader: true });
-
+      fetchSearch();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchName])
+  
+   const fetchSearch = () => {
+    setLoader(true);
     api
-      .fetchSearch(searchName, page)
+     .fetchSearch(searchName, page)
       .then((res) => {
         const { hits } = res;
+        setImages(prevState => [...prevState, ...hits])
+        setPage(prevState => prevState + 1)
 
-        this.setState((prevState) => ({
-          images: [...prevState.images, ...hits],
-          page: prevState.page + 1,
-        }));
         if (images.length > 12) {
           window.scrollTo({
             top: document.documentElement.scrollHeight,
@@ -50,32 +41,39 @@ class App extends Component {
           });
         }
       })
-      .catch((error) => this.setState({ error }))
-      .finally(() => this.setState({ loader: false }));
+      .catch(error => setError(error))
+      .finally(() => setLoader(false))
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+   const formSubmit = query => {
+     if( query !== searchName ) {
+      setSearchName(query);
+      setPage(1)
+      setImages([]);
+      setError(null);
+     }
   };
 
-  onImgClick = (e) => {
+  // const prevSearch = useRef();
+
+   const toggleModal = () => {
+    setShowModal(showModal =>  !showModal);
+  };
+
+   const onImgClick = (e) => {
     if (e.target.nodeName !== "IMG") {
       return;
     }
-    this.setState({
+    setModalImg({
       modalImg: e.target.dataset.img,
     });
-    this.toggleModal();
+    toggleModal();
   };
 
-  render() {
-    const { images, loader, showModal, modalImg } = this.state;
     return (
       <div>
         {loader && <Loader />}
-        {this.state.error && <p>{this.state.error.message}</p>}
+        {error && <p>{error.message}</p>}
 
         <ToastContainer
           position="top-center"
@@ -84,15 +82,14 @@ class App extends Component {
           closeOnClick
           rtl={false}
         />
-        <SearchBar onSubmit={this.formSubmit} />
-        <ImageGallery images={images} onImgClick={this.onImgClick} />
-
-        {images.length > 0 && !loader && <Button onClick={this.fetchSearch} />}
-        {showModal && <Modal modalImg={modalImg} onClose={this.toggleModal} />}
+        <SearchBar onSubmit={formSubmit} />
+        <ImageGallery images={images} onImgClick={onImgClick} />
+      
+        {images.length > 0 && !loader && <Button onClick={fetchSearch} />}
+        {showModal && <Modal modalImg={modalImg} onClose={toggleModal} />}
       
       </div>
     );
-  }
 }
 
-export default App;
+
