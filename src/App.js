@@ -60,6 +60,17 @@ export default function App()  {
     setShowModal(showModal =>  !showModal);
   };
 
+  // const onImgClick = useMemo((e) => {
+
+  //   if (e.target.nodeName !== "IMG") {
+  //     return;
+  //   }
+  //   setModalImg({
+  //     modalImg: e.target.dataset.img,
+  //   });
+  //   toggleModal();
+  // }, [])
+
    const onImgClick = (e) => {
     if (e.target.nodeName !== "IMG") {
       return;
